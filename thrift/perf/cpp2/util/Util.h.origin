@@ -22,14 +22,18 @@
 #include <thrift/lib/cpp/async/TAsyncSSLSocket.h>
 #include <thrift/lib/cpp/async/TAsyncSocket.h>
 #include <thrift/lib/cpp2/async/HeaderClientChannel.h>
+#include <thrift/lib/cpp2/async/RSocketClientChannel.h>
 #include <thrift/lib/cpp2/server/BaseThriftServer.h>
 #include <thrift/lib/cpp2/transport/core/ThriftClient.h>
 #include <thrift/lib/cpp2/transport/core/testutil/ServerConfigsMock.h>
+#include <thrift/lib/cpp2/transport/http2/client/H2ClientConnection.h>
 #include <thrift/lib/cpp2/transport/inmemory/InMemoryConnection.h>
 
 using apache::thrift::ClientConnectionIf;
+using apache::thrift::H2ClientConnection;
 using apache::thrift::HeaderClientChannel;
 using apache::thrift::InMemoryConnection;
+using apache::thrift::RSocketClientChannel;
 using apache::thrift::ThriftClient;
 using apache::thrift::ThriftServerAsyncProcessorFactory;
 using apache::thrift::async::TAsyncSocket;
@@ -59,7 +63,31 @@ static std::unique_ptr<AsyncClient> newHeaderClient(
   return std::make_unique<AsyncClient>(std::move(chan));
 }
 
+template <typename AsyncClient>
+static std::unique_ptr<AsyncClient> newHTTP2Client(
+    folly::EventBase* evb,
+    folly::SocketAddress const& addr,
+    bool encrypted) {
+  auto sock = apache::thrift::perf::getSocket(evb, addr, encrypted, {"h2"});
+  std::shared_ptr<ClientConnectionIf> conn =
+      H2ClientConnection::newHTTP2Connection(std::move(sock));
+  auto client = ThriftClient::Ptr(new ThriftClient(conn, evb));
+  client->setProtocolId(apache::thrift::protocol::T_COMPACT_PROTOCOL);
+  client->setTimeout(500);
+  return std::make_unique<AsyncClient>(std::move(client));
+}
 
+template <typename AsyncClient>
+static std::unique_ptr<AsyncClient> newRSocketClient(
+    folly::EventBase* evb,
+    folly::SocketAddress const& addr,
+    bool encrypted) {
+  auto sock = apache::thrift::perf::getSocket(evb, addr, encrypted, {"rs"});
+  RSocketClientChannel::Ptr channel =
+      RSocketClientChannel::newChannel(std::move(sock), encrypted);
+  channel->setProtocolId(apache::thrift::protocol::T_COMPACT_PROTOCOL);
+  return std::make_unique<AsyncClient>(std::move(channel));
+}
 
 template <typename AsyncClient, typename ServiceHandler>
 static std::unique_ptr<AsyncClient> newInMemoryClient(
@@ -82,6 +110,12 @@ static std::unique_ptr<AsyncClient> newClient(
     bool encrypted = false) {
   if (transport == "header") {
     return newHeaderClient<AsyncClient>(evb, addr);
+  }
+  if (transport == "rsocket") {
+    return newRSocketClient<AsyncClient>(evb, addr, encrypted);
+  }
+  if (transport == "http2") {
+    return newHTTP2Client<AsyncClient>(evb, addr, encrypted);
   }
   return nullptr;
 }

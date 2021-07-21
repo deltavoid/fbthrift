@@ -39,17 +39,17 @@ PROJECT(ThriftTransport_CPP2_Example CXX)
 
 
 
-# add_executable(
-#   echo_client
+add_executable(
+  echo_client
 
-#   client/EchoClient.cpp
-# )
-# target_link_libraries(
-#   echo_client
+  client/EchoClient.cpp
+)
+target_link_libraries(
+  echo_client
 
-#   chatroom-cpp2
-# )
-# install(
-#   TARGETS echo_client
-#   RUNTIME DESTINATION bin/cpp2/
-# )
+  chatroom-cpp2
+)
+install(
+  TARGETS echo_client
+  RUNTIME DESTINATION bin/cpp2/
+)
