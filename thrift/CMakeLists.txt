@@ -30,3 +30,6 @@ install(
   NAMESPACE FBThrift::
   DESTINATION ${CMAKE_INSTALL_DIR}
 )
+
+
+add_subdirectory(example)
