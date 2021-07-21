@@ -50,3 +50,7 @@ gen-cpp2
 /thrift/compiler/thrifty.cc
 /thrift/compiler/py/build/
 /thrift/compiler/py/frontend.so
+
+
+_build
+thrift/compiler/stack.hh
