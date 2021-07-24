@@ -50,7 +50,11 @@ class SaslNegotiationHandler : public wangle::InboundHandler<BufAndHeader> {
 class DummySaslNegotiationHandler : public SaslNegotiationHandler {
  public:
   void read(Context* ctx, BufAndHeader bufAndHeader) override {
+
+    DLOG(INFO) << "apache::thrift::DummySaslNegotiationHandler::read: 1";
     ctx->fireRead(std::move(bufAndHeader));
+
+    DLOG(INFO) << "apache::thrift::DummySaslNegotiationHandler::read: 2, end";
   }
 
   bool handleSecurityMessage(

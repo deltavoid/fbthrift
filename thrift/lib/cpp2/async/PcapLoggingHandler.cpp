@@ -771,13 +771,19 @@ folly::Future<folly::Unit> PcapLoggingHandler::write(
 }
 
 void PcapLoggingHandler::read(Context* ctx, folly::IOBufQueue& q) {
+
+  DLOG(INFO) << "apache::thrift::PcapLoggingHandler::read: 1";
 #ifdef THRIFT_PCAP_LOGGING_SUPPORTED
   if (enabled_) {
+
+    DLOG(INFO) << "apache::thrift::PcapLoggingHandler::read: 2";
     maybeCheckSsl(ctx);
     folly::IOBufQueue copy(folly::IOBufQueue::cacheChainLength());
     copy.append(q.front()->clone());
     size_t origLength = copy.chainLength();
     if (origLength > static_cast<size_t>(snaplen_)) {
+
+      DLOG(INFO) << "apache::thrift::PcapLoggingHandler::read: 3";
       copy.trimEnd(origLength - snaplen_);
     }
     Message msg(
@@ -793,7 +799,10 @@ void PcapLoggingHandler::read(Context* ctx, folly::IOBufQueue& q) {
   }
 #endif
 
+  DLOG(INFO) << "apache::thrift::PcapLoggingHandler::read: 4";
   ctx->fireRead(q);
+
+  DLOG(INFO) << "apache::thrift::PcapLoggingHandler::read: 5, end";
 }
 
 folly::Future<folly::Unit> PcapLoggingHandler::close(Context* ctx) {

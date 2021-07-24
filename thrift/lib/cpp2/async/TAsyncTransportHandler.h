@@ -117,8 +117,14 @@ class TAsyncTransportHandler : public wangle::BytesToBytesHandler,
   }
 
   void readDataAvailable(size_t len) noexcept override {
+
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::readDataAvailable: 1";
     bufQueue_.postallocate(len);
+
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::readDataAvailable: 2";
     getContext()->fireRead(bufQueue_);
+
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::readDataAvailable: 3, end";
   }
 
   bool isBufferMovable() noexcept override {

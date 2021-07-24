@@ -55,17 +55,26 @@ class FutureCallback : public FutureCallbackBase<Result> {
         processor_(processor) {}
 
   void replyReceived(ClientReceiveState&& state) {
+
+    DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 1";
     CHECK(!state.isException());
     CHECK(state.buf());
 
     Result result;
     auto ew = processor_(result, state);
 
+    DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 2";
     if (ew) {
+
+      DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 3";
       this->promise_.setException(ew);
     } else {
+
+      DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 4";
       this->promise_.setValue(std::move(result));
     }
+
+    DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 5";
   }
 
  private:

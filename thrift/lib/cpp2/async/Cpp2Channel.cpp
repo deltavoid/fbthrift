@@ -129,30 +129,46 @@ void Cpp2Channel::read(
     Context*,
     std::pair<std::unique_ptr<folly::IOBuf>, std::unique_ptr<THeader>>
         bufAndHeader) {
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 1";
   DestructorGuard dg(this);
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 2";
   if (recvCallback_) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 3";
     auto samplingStatus =
         recvCallback_->shouldSample(bufAndHeader.second.get());
     if (samplingStatus.isEnabled()) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 4";
       sample_.reset(new RecvCallback::sample(samplingStatus));
       sample_->readBegin = Util::currentTimeUsec();
     }
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 5";
   if (!recvCallback_) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 6";
     VLOG(5) << "Received a message, but no recvCallback_ installed!";
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 7";
   if (sample_) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 8";
     sample_->readEnd = Util::currentTimeUsec();
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 9";
   recvCallback_->messageReceived(
       std::move(bufAndHeader.first),
       std::move(bufAndHeader.second),
       std::move(sample_));
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 10, end";
 }
 
 void Cpp2Channel::readEOF(Context*) {

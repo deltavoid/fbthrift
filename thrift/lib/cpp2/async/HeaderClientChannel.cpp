@@ -514,20 +514,31 @@ void HeaderClientChannel::messageReceived(
     unique_ptr<IOBuf>&& buf,
     unique_ptr<THeader>&& header,
     unique_ptr<MessageChannel::RecvCallback::sample>) {
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 1";
   DestructorGuard dg(this);
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 2";
   buf = handleSecurityMessage(std::move(buf), std::move(header));
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 3";
   if (!buf) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 4";
     return;
   }
 
   uint32_t recvSeqId;
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 5";
   if (header->getClientType() != THRIFT_HEADER_CLIENT_TYPE &&
       header->getClientType() != THRIFT_HEADER_SASL_CLIENT_TYPE) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 6";
     if (header->getClientType() == THRIFT_HTTP_CLIENT_TYPE &&
         buf->computeChainDataLength() == 0) {
+
+      DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 7";
       // HTTP/1.x Servers must send a response, even for oneway requests.
       // Ignore these responses.
       return;
@@ -535,9 +546,12 @@ void HeaderClientChannel::messageReceived(
     // Non-header clients will always be in order.
     // Note that for non-header clients, getSequenceNumber()
     // will return garbage.
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 8";
     recvSeqId = recvCallbackOrder_.front();
     recvCallbackOrder_.pop_front();
   } else {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 9";
     // The header contains the seq-id.  May be out of order.
     recvSeqId = header->getSequenceNumber();
   }
@@ -548,7 +562,10 @@ void HeaderClientChannel::messageReceived(
   // Could possibly try and deserialize the buf and throw a
   // TApplicationException.
   // BUT, we don't even know for sure what protocol to deserialize with.
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 10";
   if (cb == recvCallbacks_.end()) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 11";
     VLOG(5) << "Could not find message id in recvCallbacks "
             << "(timed out, possibly server is just now sending response?)";
     return;
@@ -559,15 +576,22 @@ void HeaderClientChannel::messageReceived(
   auto it = header->getHeaders().find("thrift_stream");
   bool isChunk = (it != header->getHeaders().end() && it->second == "chunk");
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 12";
   if (isChunk) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 13";
     f->partialReplyReceived(std::move(buf), std::move(header));
   } else {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 14";
     // non-stream message or end of stream
     recvCallbacks_.erase(recvSeqId);
     // we are the last callback?
     setBaseReceivedCallback();
     f->replyReceived(std::move(buf), std::move(header));
   }
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 15";
 }
 
 void HeaderClientChannel::messageChannelEOF() {
