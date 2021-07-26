@@ -74,7 +74,7 @@ class FutureCallback : public FutureCallbackBase<Result> {
       this->promise_.setValue(std::move(result));
     }
 
-    DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 5";
+    DLOG(INFO) << "apache::thrift::FutureCallback::replyReceived: 5, end";
   }
 
  private:

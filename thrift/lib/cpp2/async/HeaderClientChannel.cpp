@@ -591,7 +591,7 @@ void HeaderClientChannel::messageReceived(
     f->replyReceived(std::move(buf), std::move(header));
   }
 
-  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 15";
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 15, end";
 }
 
 void HeaderClientChannel::messageChannelEOF() {

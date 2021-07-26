@@ -65,6 +65,8 @@ void FramingHandler::read(Context* ctx, folly::IOBufQueue& q) {
       DLOG(INFO) << "apache::thrift::FramingHandler::read: 8";
       ctx->setReadBufferSettings(
           readBufferSize_, remaining ? remaining : readBufferSize_);
+
+      DLOG(INFO) << "apache::thrift::FramingHandler::read: 8.1, end";
       return;
     } else {
 

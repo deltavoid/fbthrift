@@ -116,16 +116,20 @@ class ChannelCallbacks {
     void replyReceived(
         std::unique_ptr<folly::IOBuf> buf,
         std::unique_ptr<apache::thrift::transport::THeader> header) {
+
+      DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 1";
       DestructorGuard dg(this);
       X_CHECK_STATE_NE(sendState_, QState::INIT);
       X_CHECK_STATE_EQ(recvState_, QState::QUEUED);
       recvState_ = QState::DONE;
       cancelTimeout();
 
+      DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 2";
       CHECK(!cbCalled_);
       CHECK(cb_);
       cbCalled_ = true;
 
+      DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 3";
       folly::RequestContextScopeGuard rctx(cb_->context_);
       cb_->replyReceived(ClientReceiveState(
           protoId_,
@@ -136,7 +140,10 @@ class ChannelCallbacks {
           true));
       cb_.reset();
 
+      DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 4";
       maybeDeleteThis();
+
+      DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 5, end";
     }
     void partialReplyReceived(
         std::unique_ptr<folly::IOBuf> buf,
