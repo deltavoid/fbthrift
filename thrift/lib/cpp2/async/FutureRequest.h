@@ -50,9 +50,13 @@ class FutureCallback : public FutureCallbackBase<Result> {
   FutureCallback(
       folly::Promise<Result>&& promise,
       Processor processor,
-      std::shared_ptr<apache::thrift::RequestChannel> channel = nullptr)
+      std::shared_ptr<apache::thrift::RequestChannel> channel = nullptr
+  )
       : FutureCallbackBase<Result>(std::move(promise), std::move(channel)),
-        processor_(processor) {}
+        processor_(processor) 
+  {
+    DLOG(INFO) << "apache::thrift::FutureCallback::FutureCallback";
+  }
 
   void replyReceived(ClientReceiveState&& state) {
 

@@ -513,7 +513,8 @@ HeaderClientChannel::ClientFramingHandler::removeFrame(IOBufQueue* q) {
 void HeaderClientChannel::messageReceived(
     unique_ptr<IOBuf>&& buf,
     unique_ptr<THeader>&& header,
-    unique_ptr<MessageChannel::RecvCallback::sample>) {
+    unique_ptr<MessageChannel::RecvCallback::sample>) 
+{
 
   DLOG(INFO) << "apache::thrift::HeaderClientChannel::messageReceived: 1";
   DestructorGuard dg(this);

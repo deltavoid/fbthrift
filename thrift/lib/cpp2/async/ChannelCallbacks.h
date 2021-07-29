@@ -42,6 +42,7 @@ class ChannelCallbacks {
    *
    * Deletion automatically uninstalls the timeout.
    */
+  
   template <class Channel>
   class TwowayCallback final : public MessageChannel::SendCallback,
                                public folly::HHWheelTimer::Callback,
@@ -74,10 +75,14 @@ class ChannelCallbacks {
           sendState_(QState::INIT),
           recvState_(QState::QUEUED),
           cbCalled_(false),
-          chunkTimeoutCallback_(this, timer, chunkTimeout) {
+          chunkTimeoutCallback_(this, timer, chunkTimeout) 
+    {
+      DLOG(INFO) << "apache::thrift::TwowayCallback::TwowayCallback: 1";
       if (timeout > std::chrono::milliseconds(0)) {
         timer->scheduleTimeout(this, timeout);
       }
+
+      DLOG(INFO) << "apache::thrift::TwowayCallback::TwowayCallback: 2, end";
     }
     void sendQueued() override {
       X_CHECK_STATE_EQ(sendState_, QState::INIT);
@@ -113,9 +118,12 @@ class ChannelCallbacks {
       }
       destroy();
     }
+
+
     void replyReceived(
         std::unique_ptr<folly::IOBuf> buf,
-        std::unique_ptr<apache::thrift::transport::THeader> header) {
+        std::unique_ptr<apache::thrift::transport::THeader> header) 
+    {
 
       DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 1";
       DestructorGuard dg(this);
@@ -145,6 +153,8 @@ class ChannelCallbacks {
 
       DLOG(INFO) << "apache::thrift::ChannelCallbacks::TwowayCallback::replyReceived: 5, end";
     }
+
+    
     void partialReplyReceived(
         std::unique_ptr<folly::IOBuf> buf,
         std::unique_ptr<apache::thrift::transport::THeader> header) {
@@ -223,6 +233,10 @@ class ChannelCallbacks {
       X_CHECK_STATE_EQ(recvState_, QState::DONE);
       CHECK(cbCalled_);
     }
+
+
+
+
     Channel* channel_;
     uint32_t sendSeqId_;
     uint16_t protoId_;
@@ -231,6 +245,10 @@ class ChannelCallbacks {
     QState sendState_;
     QState recvState_;
     bool cbCalled_; // invariant: (cb_ == nullptr) == cbCalled_
+    
+    
+    
+    
     class TimerCallback : public folly::HHWheelTimer::Callback {
      public:
       TimerCallback(

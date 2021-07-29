@@ -42,10 +42,14 @@ void FramingHandler::read(Context* ctx, folly::IOBufQueue& q) {
       DLOG(INFO) << "apache::thrift::FramingHandler::read: 3";
       return;
     }
+
+    
     std::unique_ptr<folly::IOBuf> unframed;
     std::unique_ptr<apache::thrift::transport::THeader> header;
+    
     auto ex = folly::try_and_catch<std::exception>([&]() {
       // got a decrypted message
+      DLOG(INFO) << "apache::thrift::FramingHandler::read: 4";
       std::tie(unframed, remaining, header) = removeFrame(&q);
     });
 

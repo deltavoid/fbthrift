@@ -50,12 +50,16 @@ Cpp2Channel::Cpp2Channel(
           std::make_shared<wangle::OutputBufferingHandler>()),
       protectionHandler_(std::move(protectionHandler)),
       framingHandler_(std::move(framingHandler)),
-      saslNegotiationHandler_(std::move(saslNegotiationHandler)) {
+      saslNegotiationHandler_(std::move(saslNegotiationHandler)) 
+{
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 1";
   if (!protectionHandler_) {
     protectionHandler_.reset(new ProtectionHandler);
   }
   framingHandler_->setProtectionHandler(protectionHandler_.get());
 
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 2";
   if (!saslNegotiationHandler_) {
     saslNegotiationHandler_ = std::make_unique<DummySaslNegotiationHandler>();
   }
@@ -64,6 +68,8 @@ Cpp2Channel::Cpp2Channel(
     return protectionHandler_->getProtectionState() ==
         ProtectionHandler::ProtectionState::VALID;
   });
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 3";
   pipeline_ = Pipeline::create(
       TAsyncTransportHandler(transport),
       outputBufferingHandler_,
@@ -75,10 +81,15 @@ Cpp2Channel::Cpp2Channel(
   // Let the pipeline know that this handler owns the pipeline itself.
   // The pipeline will then avoid destruction order issues.
   // CHECK that this operation is successful.
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 4";
   CHECK(pipeline_->setOwner(this));
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 5";
   pipeline_->transportActive();
   // TODO getHandler() with no index should return first valid handler?
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 6";
   transportHandler_ = pipeline_->getHandler<TAsyncTransportHandler>(0);
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 7, end";
 }
 
 folly::Future<folly::Unit> Cpp2Channel::close(Context* ctx) {
@@ -128,7 +139,8 @@ EventBase* Cpp2Channel::getEventBase() {
 void Cpp2Channel::read(
     Context*,
     std::pair<std::unique_ptr<folly::IOBuf>, std::unique_ptr<THeader>>
-        bufAndHeader) {
+        bufAndHeader) 
+{
 
   DLOG(INFO) << "apache::thrift::Cpp2Channel::read: 1";
   DestructorGuard dg(this);

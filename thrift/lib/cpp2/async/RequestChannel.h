@@ -526,13 +526,16 @@ void clientSendT(
     folly::FunctionRef<void(Protocol*)> writefunc,
     folly::FunctionRef<size_t(Protocol*)> sizefunc,
     RpcKind kind,
-    bool sync) {
+    bool sync) 
+{
+  DLOG(INFO) << "apache::thrift::clientSendT: 1";
   size_t bufSize = sizefunc(prot);
   bufSize += prot->serializedMessageSize(methodName);
   folly::IOBufQueue queue(folly::IOBufQueue::cacheChainLength());
   prot->setOutput(&queue, bufSize);
   auto guard = folly::makeGuard([&] { prot->setOutput(nullptr); });
   try {
+    DLOG(INFO) << "apache::thrift::clientSendT: 2";
     ctx->preWrite();
     prot->writeMessageBegin(methodName, apache::thrift::T_CALL, 0);
     writefunc(prot);
@@ -548,14 +551,18 @@ void clientSendT(
     throw;
   }
 
+  DLOG(INFO) << "apache::thrift::clientSendT: 3";
   if (sync) {
+    DLOG(INFO) << "apache::thrift::clientSendT: 4";
     channel->sendRequestSync(
         rpcOptions, std::move(callback), std::move(ctx), queue.move(), header);
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::clientSendT: 5";
   auto eb = channel->getEventBase();
   if (!eb || eb->isInEventBaseThread()) {
+    DLOG(INFO) << "apache::thrift::clientSendT: 6";
     switch (kind) {
       case RpcKind::SINGLE_REQUEST_NO_RESPONSE:
         // Calling asyncComplete before sending because
@@ -590,6 +597,8 @@ void clientSendT(
     }
 
   } else {
+
+    DLOG(INFO) << "apache::thrift::clientSendT: 7";
     switch (kind) {
       case RpcKind::SINGLE_REQUEST_NO_RESPONSE:
         eb->runInEventBaseThread([channel,
@@ -644,6 +653,8 @@ void clientSendT(
         break;
     }
   }
+
+  DLOG(INFO) << "apache::thrift::clientSendT: 8, end";
 }
 } // namespace thrift
 } // namespace apache
