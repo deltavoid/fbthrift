@@ -185,12 +185,23 @@ void ProtectionHandler::read(Context* ctx, folly::IOBufQueue& q) {
 
 folly::Future<folly::Unit> ProtectionHandler::write(
     Context* ctx,
-    std::unique_ptr<folly::IOBuf> buf) {
+    std::unique_ptr<folly::IOBuf> buf) 
+{
+
+  DLOG(INFO) << "apache::thrift::ProtectionHandler::write: 1";
   if (protectionState_ == ProtectionState::VALID) {
+
+    DLOG(INFO) << "apache::thrift::ProtectionHandler::write: 2";
     assert(saslEndpoint_);
     buf = saslEndpoint_->wrap(std::move(buf));
   }
-  return ctx->fireWrite(std::move(buf));
+
+  DLOG(INFO) << "apache::thrift::ProtectionHandler::write: 3";
+  // return ctx->fireWrite(std::move(buf));
+  auto ret = ctx->fireWrite(std::move(buf));
+
+  DLOG(INFO) << "apache::thrift::ProtectionHandler::write: 4";
+  return ret;
 }
 
 void ProtectionHandler::protectionStateChanged() {
