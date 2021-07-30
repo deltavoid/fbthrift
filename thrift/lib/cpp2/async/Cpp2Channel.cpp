@@ -42,7 +42,8 @@ Cpp2Channel::Cpp2Channel(
     const std::shared_ptr<TAsyncTransport>& transport,
     std::unique_ptr<FramingHandler> framingHandler,
     std::unique_ptr<ProtectionHandler> protectionHandler,
-    std::unique_ptr<SaslNegotiationHandler> saslNegotiationHandler)
+    std::unique_ptr<SaslNegotiationHandler> saslNegotiationHandler
+)
     : transport_(transport),
       recvCallback_(nullptr),
       eofInvoked_(false),
@@ -54,22 +55,28 @@ Cpp2Channel::Cpp2Channel(
 {
   DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 1";
   if (!protectionHandler_) {
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 2";
     protectionHandler_.reset(new ProtectionHandler);
   }
   framingHandler_->setProtectionHandler(protectionHandler_.get());
 
 
-  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 2";
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 3";
   if (!saslNegotiationHandler_) {
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 4";
     saslNegotiationHandler_ = std::make_unique<DummySaslNegotiationHandler>();
   }
   saslNegotiationHandler_->setProtectionHandler(protectionHandler_.get());
+  
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 5";
   auto pcapLoggingHandler = std::make_shared<PcapLoggingHandler>([this] {
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 6";
     return protectionHandler_->getProtectionState() ==
         ProtectionHandler::ProtectionState::VALID;
   });
 
-  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 3";
+  
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 7";
   pipeline_ = Pipeline::create(
       TAsyncTransportHandler(transport),
       outputBufferingHandler_,
@@ -81,15 +88,15 @@ Cpp2Channel::Cpp2Channel(
   // Let the pipeline know that this handler owns the pipeline itself.
   // The pipeline will then avoid destruction order issues.
   // CHECK that this operation is successful.
-  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 4";
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 8";
   CHECK(pipeline_->setOwner(this));
-  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 5";
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 9";
   pipeline_->transportActive();
   // TODO getHandler() with no index should return first valid handler?
-  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 6";
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 10";
   transportHandler_ = pipeline_->getHandler<TAsyncTransportHandler>(0);
 
-  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 7, end";
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::Cpp2Channel: 11, end";
 }
 
 folly::Future<folly::Unit> Cpp2Channel::close(Context* ctx) {

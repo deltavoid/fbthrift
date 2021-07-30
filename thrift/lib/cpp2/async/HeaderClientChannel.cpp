@@ -42,10 +42,16 @@ namespace thrift {
 template class ChannelCallbacks::TwowayCallback<HeaderClientChannel>;
 
 HeaderClientChannel::HeaderClientChannel(
-    const std::shared_ptr<TAsyncTransport>& transport)
+    const std::shared_ptr<TAsyncTransport>& transport
+)
     : HeaderClientChannel(std::shared_ptr<Cpp2Channel>(Cpp2Channel::newChannel(
           transport,
-          make_unique<ClientFramingHandler>(*this)))) {}
+          make_unique<ClientFramingHandler>(*this)))
+      ) 
+{
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::HeaderClientChannel(transport)";
+
+}
 
 HeaderClientChannel::HeaderClientChannel(
     const std::shared_ptr<Cpp2Channel>& cpp2Channel)
@@ -58,7 +64,11 @@ HeaderClientChannel::HeaderClientChannel(
       keepRegisteredForClose_(true),
       saslClientCallback_(*this),
       cpp2Channel_(cpp2Channel),
-      protocolId_(apache::thrift::protocol::T_COMPACT_PROTOCOL) {}
+      protocolId_(apache::thrift::protocol::T_COMPACT_PROTOCOL) 
+{
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::HeaderClientChannel(cpp2Channel)";
+
+}
 
 void HeaderClientChannel::setTimeout(uint32_t ms) {
   getTransport()->setSendTimeout(ms);
@@ -492,20 +502,29 @@ HeaderClientChannel::ClientFramingHandler::addFrame(
 }
 
 std::tuple<std::unique_ptr<IOBuf>, size_t, std::unique_ptr<THeader>>
-HeaderClientChannel::ClientFramingHandler::removeFrame(IOBufQueue* q) {
+HeaderClientChannel::ClientFramingHandler::removeFrame(IOBufQueue* q) 
+{
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::ClientFramingHandler::removeFrame: 1";
   std::unique_ptr<THeader> header(new THeader(THeader::ALLOW_BIG_FRAMES));
   if (!q || !q->front() || q->front()->empty()) {
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::ClientFramingHandler::removeFrame: 2, end";
     return make_tuple(std::unique_ptr<IOBuf>(), 0, nullptr);
   }
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::ClientFramingHandler::removeFrame: 3";
   size_t remaining = 0;
   std::unique_ptr<folly::IOBuf> buf =
       header->removeHeader(q, remaining, channel_.getPersistentReadHeaders());
   if (!buf) {
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::ClientFramingHandler::removeFrame: 4, end";
     return make_tuple(std::unique_ptr<folly::IOBuf>(), remaining, nullptr);
   }
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::ClientFramingHandler::removeFrame: 5";
   channel_.checkSupportedClient(header->getClientType());
   header->setMinCompressBytes(channel_.getMinCompressBytes());
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::ClientFramingHandler::removeFrame: 6, end";
   return make_tuple(std::move(buf), 0, std::move(header));
 }
 
