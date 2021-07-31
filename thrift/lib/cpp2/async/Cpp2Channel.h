@@ -103,8 +103,15 @@ class Cpp2Channel
   folly::Future<folly::Unit> write(
       Context* ctx,
       std::pair<std::unique_ptr<folly::IOBuf>, THeader*> bufAndHeader)
-      override {
-    return ctx->fireWrite(std::move(bufAndHeader));
+      override 
+  {
+    // return ctx->fireWrite(std::move(bufAndHeader));
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::write: 1";
+    auto ret = ctx->fireWrite(std::move(bufAndHeader));
+    
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::write: 2, end";
+    return ret;
   }
 
   void writeSuccess() noexcept;

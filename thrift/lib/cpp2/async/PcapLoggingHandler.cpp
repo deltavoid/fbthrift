@@ -744,9 +744,15 @@ void PcapLoggingHandler::maybeCheckSsl(Context* ctx) {
 
 folly::Future<folly::Unit> PcapLoggingHandler::write(
     Context* ctx,
-    std::unique_ptr<folly::IOBuf> buf) {
+    std::unique_ptr<folly::IOBuf> buf) 
+{
+
+  DLOG(INFO) << "apache::thrift::PcapLoggingHandler::write: 1";
+
 #ifdef THRIFT_PCAP_LOGGING_SUPPORTED
   if (enabled_) {
+
+    DLOG(INFO) << "apache::thrift::PcapLoggingHandler::write: 2";
     maybeCheckSsl(ctx);
     folly::IOBufQueue q(folly::IOBufQueue::cacheChainLength());
     q.append(buf->clone());
@@ -767,7 +773,13 @@ folly::Future<folly::Unit> PcapLoggingHandler::write(
   }
 #endif
 
-  return ctx->fireWrite(std::move(buf));
+  // return ctx->fireWrite(std::move(buf));
+
+  DLOG(INFO) << "apache::thrift::PcapLoggingHandler::write: 3";
+  auto ret = ctx->fireWrite(std::move(buf));
+
+  DLOG(INFO) << "apache::thrift::PcapLoggingHandler::write: 4";
+  return ret;
 }
 
 void PcapLoggingHandler::read(Context* ctx, folly::IOBufQueue& q) {

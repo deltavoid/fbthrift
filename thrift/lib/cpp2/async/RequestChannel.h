@@ -565,6 +565,8 @@ void clientSendT(
     DLOG(INFO) << "apache::thrift::clientSendT: 6";
     switch (kind) {
       case RpcKind::SINGLE_REQUEST_NO_RESPONSE:
+
+        DLOG(INFO) << "apache::thrift::clientSendT: 6.1";
         // Calling asyncComplete before sending because
         // sendOnewayRequest moves from ctx and clears it.
         ctx->asyncComplete();
@@ -576,6 +578,8 @@ void clientSendT(
             header);
         break;
       case RpcKind::SINGLE_REQUEST_SINGLE_RESPONSE:
+
+        DLOG(INFO) << "apache::thrift::clientSendT: 6.2";
         channel->sendRequest(
             rpcOptions,
             std::move(callback),
@@ -584,6 +588,8 @@ void clientSendT(
             header);
         break;
       case RpcKind::SINGLE_REQUEST_STREAMING_RESPONSE:
+
+        DLOG(INFO) << "apache::thrift::clientSendT: 6.3";
         channel->sendStreamRequest(
             rpcOptions,
             std::move(callback),
@@ -592,6 +598,8 @@ void clientSendT(
             header);
         break;
       default:
+
+        DLOG(INFO) << "apache::thrift::clientSendT: 6.4";
         folly::assume_unreachable();
         break;
     }

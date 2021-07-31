@@ -426,13 +426,20 @@ uint32_t HeaderClientChannel::sendRequest(
     std::unique_ptr<RequestCallback> cb,
     std::unique_ptr<apache::thrift::ContextStack> ctx,
     std::unique_ptr<IOBuf> buf,
-    std::shared_ptr<THeader> header) {
+    std::shared_ptr<THeader> header) 
+{
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 1";
   // cb is not allowed to be null.
   DCHECK(cb);
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 2";
   cb->context_ = RequestContext::saveContext();
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 3";
   if (isSecurityPending()) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 4";
     cb->securityStart_ =
         std::chrono::duration_cast<Us>(HResClock::now().time_since_epoch())
             .count();
@@ -444,28 +451,40 @@ uint32_t HeaderClientChannel::sendRequest(
         std::move(buf),
         std::move(header)));
 
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 5";
     // Security always happens at the beginning of the channel, with seq id 0.
     // Return sequence id expected to be generated when security is done.
     if (++sendSecurityPendingSeqId_ == ResponseChannel::ONEWAY_REQUEST_ID) {
       ++sendSecurityPendingSeqId_;
     }
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 6, end";
     return sendSecurityPendingSeqId_;
   }
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 7";
   DestructorGuard dg(this);
 
   // Oneway requests use a special sequence id.
   // Make sure this non-oneway request doesn't use
   // the oneway request ID.
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 8";
   if (++sendSeqId_ == ResponseChannel::ONEWAY_REQUEST_ID) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 9";
     ++sendSeqId_;
   }
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 10";
   std::chrono::milliseconds timeout(timeout_);
   if (rpcOptions.getTimeout() > std::chrono::milliseconds(0)) {
+
+    DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 11";
     timeout = rpcOptions.getTimeout();
   }
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 12";
   auto twcb = new TwowayCallback<HeaderClientChannel>(
       this,
       sendSeqId_,
@@ -476,9 +495,11 @@ uint32_t HeaderClientChannel::sendRequest(
       timeout,
       rpcOptions.getChunkTimeout());
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 13";
   setRequestHeaderOptions(header.get());
   addRpcOptionHeaders(header.get(), rpcOptions);
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 14";
   if (getClientType() != THRIFT_HEADER_CLIENT_TYPE &&
       getClientType() != THRIFT_HEADER_SASL_CLIENT_TYPE) {
     recvCallbackOrder_.push_back(sendSeqId_);
@@ -486,7 +507,10 @@ uint32_t HeaderClientChannel::sendRequest(
   recvCallbacks_[sendSeqId_] = twcb;
   setBaseReceivedCallback();
 
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 15";
   sendMessage(twcb, std::move(buf), header.get());
+
+  DLOG(INFO) << "apache::thrift::HeaderClientChannel::sendRequest: 16, end";
   return sendSeqId_;
 }
 

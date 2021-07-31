@@ -245,41 +245,68 @@ void Cpp2Channel::processReadEOF() noexcept {
 void Cpp2Channel::sendMessage(
     SendCallback* callback,
     std::unique_ptr<folly::IOBuf>&& buf,
-    apache::thrift::transport::THeader* header) {
+    apache::thrift::transport::THeader* header) 
+{
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 1";
   // Callback may be null.
   assert(buf);
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 2";
   if (!transport_->good()) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 3";
     VLOG(5) << "Channel is !good() in sendMessage";
     // Callback must be last thing in sendMessage, or use guard
     if (callback) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 4";
       callback->messageSendError(
           folly::make_exception_wrapper<TTransportException>(
               "Channel is !good()"));
     }
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 5, end";
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 6";
   if (callback) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 7";
     callback->sendQueued();
   }
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 8";
   sendCallbacks_.push_back(callback);
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 9";
   DestructorGuard dg(this);
 
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 10"; 
   auto future = pipeline_->write(std::make_pair(std::move(buf), header));
   std::move(future).then([this, dg](folly::Try<folly::Unit>&& t) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 11";
     if (t.withException<TTransportException>(
             [&](const TTransportException& ex) { writeError(0, ex); }) ||
         t.withException<std::exception>([&](const std::exception& ex) {
           writeError(0, TTransportException(ex.what()));
-        })) {
+        })) 
+    {
+      DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 12";
       return;
     } else {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 13";
       writeSuccess();
     }
+
+    DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 14";
   });
+
+  DLOG(INFO) << "apache::thrift::Cpp2Channel::sendMessage: 15, end";
 }
+
 
 void Cpp2Channel::setReceiveCallback(RecvCallback* callback) {
   if (recvCallback_ == callback) {

@@ -86,9 +86,17 @@ folly::Future<folly::Unit> FramingHandler::write(
     Context* ctx,
     std::pair<
         std::unique_ptr<folly::IOBuf>,
-        apache::thrift::transport::THeader*> bufAndHeader) {
-  return ctx->fireWrite(
+        apache::thrift::transport::THeader*> bufAndHeader) 
+{
+  // return ctx->fireWrite(
+  //     addFrame(std::move(bufAndHeader.first), bufAndHeader.second));
+
+  DLOG(INFO) << "apache::thrift::FramingHandler::write: 1";
+  auto ret = ctx->fireWrite(
       addFrame(std::move(bufAndHeader.first), bufAndHeader.second));
+
+  DLOG(INFO) << "apache::thrift::FramingHandler::write: 2";
+  return ret;
 }
 
 folly::Future<folly::Unit> FramingHandler::close(Context* ctx) {

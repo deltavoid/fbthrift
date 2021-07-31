@@ -76,20 +76,32 @@ class TAsyncTransportHandler : public wangle::BytesToBytesHandler,
 
   folly::Future<folly::Unit> write(
       Context* ctx,
-      std::unique_ptr<folly::IOBuf> buf) override {
+      std::unique_ptr<folly::IOBuf> buf) override 
+  {
+
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::write: 1";
     if (UNLIKELY(!buf)) {
+
+      DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::write: 2";
       return folly::makeFuture();
     }
 
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::write: 3";
     if (!transport_->good()) {
+      
       VLOG(5) << "transport is closed in write()";
+
+      DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::write: 4, end";
       return folly::makeFuture<folly::Unit>(
           transport::TTransportException("transport is closed in write()"));
     }
 
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::write: 5";
     auto cb = new WriteCallback();
     auto future = cb->promise_.getFuture();
     transport_->writeChain(cb, std::move(buf), ctx->getWriteFlags());
+    
+    DLOG(INFO) << "apache::thrift::TAsyncTransportHandler::write: 6, end";
     return future;
   }
 
