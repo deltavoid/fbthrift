@@ -221,7 +221,10 @@ class HeaderClientChannel : public ClientChannel,
   class ClientFramingHandler : public FramingHandler {
    public:
     explicit ClientFramingHandler(HeaderClientChannel& channel)
-        : channel_(channel) {}
+        : channel_(channel) 
+    {
+      DLOG(INFO) << "apache::thrift::ClientFramingHandler::ClientFramingHandler";
+    }
 
     std::tuple<
         std::unique_ptr<folly::IOBuf>,

@@ -34,7 +34,10 @@ class TAsyncSocket : public virtual folly::AsyncSocket, public TAsyncTransport {
   TAsyncSocket(folly::EventBase* evb,
                const folly::SocketAddress& address,
                uint32_t connectTimeout = 0)
-    : folly::AsyncSocket(evb, address, connectTimeout) {}
+    : folly::AsyncSocket(evb, address, connectTimeout) 
+    {
+      DLOG(INFO) << "apache::thrift::TAsyncSocket::TAsyncSocket(2)";
+    }
 
   TAsyncSocket(folly::EventBase* evb, int fd) : folly::AsyncSocket(evb, fd) {}
 
