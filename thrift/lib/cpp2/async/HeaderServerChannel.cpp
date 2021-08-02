@@ -330,36 +330,58 @@ HeaderServerChannel::HeaderRequest::HeaderRequest(
  */
 void HeaderServerChannel::HeaderRequest::sendReply(
     unique_ptr<IOBuf>&& buf,
-    MessageChannel::SendCallback* cb) {
+    MessageChannel::SendCallback* cb) 
+{
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 1";
   // This method is only called and active_ is only touched in evb, so
   // it is safe to use this flag from both timeout and normal responses.
   auto& header = active_ ? header_ : timeoutHeader_;
   if (!channel_->outOfOrder_.value()) {
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 2";
     // In order processing, make sure the ordering is correct.
     if (InOrderRecvSeqId_ != channel_->lastWrittenSeqId_ + 1) {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 3";
       // Save it until we can send it in order.
       channel_->inOrderRequests_[InOrderRecvSeqId_] =
           std::make_tuple(cb, std::move(buf), std::move(header));
     } else {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 4";
       // Send it now, and send any subsequent requests in order.
       channel_->sendCatchupRequests(std::move(buf), cb, header.get());
     }
   } else {
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 5";
     if (!buf) {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 6";
       // oneway calls are OK do this, but is a bug for twoway.
       DCHECK(isOneway());
       if (cb) {
+
+        DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 7";
         cb->messageSent();
       }
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 8";
       return;
     }
     try {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 9";
       // out of order, send as soon as it is done.
       channel_->sendMessage(cb, std::move(buf), header.get());
     } catch (const std::exception& e) {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 10";
       LOG(ERROR) << "Failed to send message: " << e.what();
     }
   }
+
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::HeaderRequest::sendReply: 11, end";
 }
 
 void HeaderServerChannel::HeaderRequest::serializeAndSendError(

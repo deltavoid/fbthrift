@@ -478,8 +478,12 @@ void Cpp2Connection::Cpp2Request::setServerHeaders() {
 
 void Cpp2Connection::Cpp2Request::sendReply(
     std::unique_ptr<folly::IOBuf>&& buf,
-    MessageChannel::SendCallback* sendCallback) {
+    MessageChannel::SendCallback* sendCallback) 
+{
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 1";
   if (req_->isActive()) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 2";
     setServerHeaders();
     markProcessEnd();
     auto observer = connection_->getWorker()->getServer()->getObserver().get();
@@ -487,6 +491,8 @@ void Cpp2Connection::Cpp2Request::sendReply(
         connection_->getWorker()->getServer()->getMaxResponseSize();
     if (maxResponseSize != 0 &&
         buf->computeChainDataLength() > maxResponseSize) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 3";
       req_->sendErrorWrapped(
           folly::make_exception_wrapper<TApplicationException>(
               TApplicationException::TApplicationExceptionType::INTERNAL_ERROR,
@@ -496,14 +502,22 @@ void Cpp2Connection::Cpp2Request::sendReply(
           reqContext_.getProtoSeqId(),
           prepareSendCallback(sendCallback, observer));
     } else {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 4";
       req_->sendReply(
           std::move(buf), prepareSendCallback(sendCallback, observer));
     }
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 5";
     cancelTimeout();
     if (observer) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 6";
       observer->sentReply();
     }
   }
+
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::sendReply: 7, end";
 }
 
 void Cpp2Connection::Cpp2Request::sendErrorWrapped(

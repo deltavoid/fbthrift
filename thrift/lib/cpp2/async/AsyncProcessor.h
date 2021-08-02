@@ -512,16 +512,28 @@ class HandlerCallbackBase {
     }
   }
 
-  void sendReply(folly::IOBufQueue queue) {
+  void sendReply(folly::IOBufQueue queue) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 1";
     transform(queue);
     if (getEventBase()->isInEventBaseThread()) {
+
+      DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 2";
       req_->sendReply(queue.move());
     } else {
+
+      DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 3";
       getEventBase()->runInEventBaseThread(
           [req = std::move(req_), queue = std::move(queue)]() mutable {
+
+            DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 4";
             req->sendReply(queue.move());
+
+            DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 5";
           });
     }
+
+    DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 6, end";
   }
 
   void sendReply(

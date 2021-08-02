@@ -96,8 +96,12 @@ class HeaderServerChannel : public ServerChannel,
   virtual void sendMessage(
       Cpp2Channel::SendCallback* callback,
       std::unique_ptr<folly::IOBuf> buf,
-      apache::thrift::transport::THeader* header) {
+      apache::thrift::transport::THeader* header) 
+  {
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::sendMessage: 1";
     cpp2Channel_->sendMessage(callback, std::move(buf), header);
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::sendMessage: 2, end";
   }
 
   // Interface from MessageChannel::RecvCallback
