@@ -192,7 +192,9 @@ class Cpp2Worker : public wangle::Acceptor,
 
   folly::AsyncSocket::UniquePtr makeNewAsyncSocket(
       folly::EventBase* base,
-      int fd) override {
+      int fd) override 
+  {
+    DLOG(INFO) << "apache::thrift::Cpp2Worker::makeNewAsyncSocket";
     return folly::AsyncSocket::UniquePtr(
         new apache::thrift::async::TAsyncSocket(base, fd));
   }
