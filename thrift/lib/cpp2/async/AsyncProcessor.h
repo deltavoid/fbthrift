@@ -49,16 +49,28 @@ class EventTask : public virtual apache::thrift::concurrency::Runnable {
         base_(base),
         oneway_(oneway) {}
 
-  void run() override {
+  void run() override 
+  {
+
+    DLOG(INFO) << "apache::thrift::EventTask::run: 1";
     if (!oneway_) {
+
+      DLOG(INFO) << "apache::thrift::EventTask::run: 2";
       if (req_ && !req_->isActive()) {
+
+        DLOG(INFO) << "apache::thrift::EventTask::run: 3";
         auto req = req_;
         base_->runInEventBaseThread([req]() { delete req; });
 
+        DLOG(INFO) << "apache::thrift::EventTask::run: 4";
         return;
       }
     }
+
+    DLOG(INFO) << "apache::thrift::EventTask::run: 5";
     taskFunc_();
+
+    DLOG(INFO) << "apache::thrift::EventTask::run: 6, end";
   }
 
   void expired() {
@@ -215,17 +227,28 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
       apache::thrift::concurrency::PRIORITY pri,
       apache::thrift::RpcKind kind,
       ProcessFunc processFunc,
-      ChildType* childClass) {
+      ChildType* childClass) 
+  {
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 1";
     if (kind == apache::thrift::RpcKind::SINGLE_REQUEST_NO_RESPONSE) {
+
+      DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 2";
       if (!req->isOneway() && !req->isStream()) {
+
+        DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 3";
         req->sendReply(std::unique_ptr<folly::IOBuf>());
       }
     }
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 4";
     if ((req->isStream() &&
          kind != apache::thrift::RpcKind::SINGLE_REQUEST_STREAMING_RESPONSE) ||
         (!req->isStream() &&
          kind == apache::thrift::RpcKind::SINGLE_REQUEST_STREAMING_RESPONSE)) {
+
+      DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 5";
       if (!req->isOneway()) {
+
+        DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 6";
         req->sendErrorWrapped(
             folly::make_exception_wrapper<TApplicationException>(
                 TApplicationException::TApplicationExceptionType::
@@ -233,33 +256,50 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
                 "Function kind mismatch"),
             kRequestTypeDoesntMatchServiceFunctionType);
       }
+
+      DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 7, end";
       return;
     }
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 8";
     auto preq = req.get();
     try {
       tm->add(
           std::make_shared<apache::thrift::PriorityEventTask>(
               pri,
               [=, iprot = std::move(iprot), buf = std::move(buf)]() mutable {
+
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 9";
                 auto rq =
                     std::unique_ptr<apache::thrift::ResponseChannel::Request>(
                         preq);
+
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 10";
                 if (rq->getTimestamps().getSamplingStatus().isEnabled()) {
+
+                  DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 11";
                   // Since this request was queued, reset the processBegin
                   // time to the actual start time, and not the queue time.
                   rq->getTimestamps().processBegin =
                       apache::thrift::concurrency::Util::currentTimeUsec();
                 }
+
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 12";
                 // Oneway request won't be canceled if expired. see
                 // D1006482 for furhter details.  TODO: fix this
                 if (kind !=
                     apache::thrift::RpcKind::SINGLE_REQUEST_NO_RESPONSE) {
+
+                  DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 13";
                   if (!rq->isActive()) {
                     eb->runInEventBaseThread(
                         [rq = std::move(rq)]() mutable { rq.reset(); });
+
+                    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 14";
                     return;
                   }
                 }
+
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 15";
                 (childClass->*processFunc)(
                     std::move(rq),
                     std::move(buf),
@@ -267,6 +307,8 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
                     ctx,
                     eb,
                     tm);
+
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 16";
               },
               preq,
               eb,
@@ -275,8 +317,11 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
           0, // expiration
           true, // cancellable
           true); // numa
+      DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 17";
       req.release();
     } catch (const std::exception&) {
+
+      DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 18";
       if (kind != apache::thrift::RpcKind::SINGLE_REQUEST_NO_RESPONSE) {
         req->sendErrorWrapped(
             folly::make_exception_wrapper<TApplicationException>(
@@ -284,6 +329,8 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
             kQueueOverloadedErrorCode);
       }
     }
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 19, end";
   }
 };
 
