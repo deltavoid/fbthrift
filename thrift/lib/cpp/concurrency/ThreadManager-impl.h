@@ -56,9 +56,15 @@ class ThreadManager::Task {
 
   ~Task() {}
 
-  void run() {
+  void run() 
+  {
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::Task::run: 1";
     folly::RequestContextScopeGuard rctx(context_);
+
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::Task::run: 2";
     runnable_->run();
+
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::Task::run: 3, end";
   }
 
   const shared_ptr<Runnable>& getRunnable() const {

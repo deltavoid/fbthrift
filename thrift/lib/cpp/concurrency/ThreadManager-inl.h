@@ -93,73 +93,116 @@ class ThreadManager::ImplT<SemType>::Worker : public Runnable {
    * As long as worker thread is running, pull tasks off the task queue and
    * execute.
    */
-  void run() override {
+  void run() override 
+  {
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 1";
     // Inform our manager that we are starting
     manager_->workerStarted(this);
 
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 2";
     while (true) {
+
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 3";
       // Wait for a task to run
       auto task = manager_->waitOnTask();
 
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 4";
       // A nullptr task means that this thread is supposed to exit
       if (!task) {
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 5";
         manager_->workerExiting(this);
+        
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 6, end";
         return;
       }
 
       // Getting the current time is moderately expensive,
       // so only get the time if we actually need it.
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 7";
       SystemClockTimePoint startTime;
       if (task->canExpire() || task->statsEnabled()) {
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 8";
         startTime = SystemClock::now();
 
         // Codel auto-expire time algorithm
         auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(
           startTime - task->getQueueBeginTime());
 
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 9";
         if (manager_->codel_.overloaded(delay)) {
+          DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 10";
           if (manager_->codelCallback_) {
+            DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 11";
             manager_->codelCallback_(task->getRunnable());
           }
           if (manager_->codelEnabled_) {
+            DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 12";
             FB_LOG_EVERY_MS(WARNING, 10000) << "Queueing delay timeout";
 
+            DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 13";
             manager_->onTaskExpired(*task);
+            DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 14";
             continue;
           }
         }
 
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 15";
         if (manager_->observer_) {
+          DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 16";
           // Hold lock to ensure that observer_ does not get deleted
           folly::SharedMutex::ReadHolder g(manager_->observerLock_);
           if (manager_->observer_) {
+            DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 17";
             manager_->observer_->preRun(task->getContext().get());
+            DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 18";
           }
         }
       }
 
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 19";
       // Check if the task is expired
       if (task->canExpire() &&
           task->getExpireTime() <= startTime) {
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 20";
         manager_->onTaskExpired(*task);
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 21";
         continue;
       }
 
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 22";
       try {
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 23";
         task->run();
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 24";
       } catch (const std::exception& ex) {
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 25";
         LOG(ERROR) << "worker task threw unhandled " << folly::exceptionStr(ex);
       } catch (...) {
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 26";
         LOG(ERROR) << "worker task threw unhandled non-exception object";
       }
 
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 27";
       if (task->statsEnabled()) {
+
+        DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 28";
         auto endTime = SystemClock::now();
         manager_->reportTaskStats(*task,
                                   startTime,
                                   endTime);
       }
+
+      DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 29";
     }
+
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::Worker::run: 30, end";
   }
 
  private:

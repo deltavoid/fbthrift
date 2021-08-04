@@ -164,22 +164,34 @@ bool PthreadThread::setName(const std::string& name) {
   return updateName();
 }
 
-void* PthreadThread::threadMain(void* arg) {
+void* PthreadThread::threadMain(void* arg) 
+{
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 1";
   shared_ptr<PthreadThread> thread = *(shared_ptr<PthreadThread>*)arg;
   delete reinterpret_cast<shared_ptr<PthreadThread>*>(arg);
 
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 2";
   if (thread == nullptr) {
+
+    DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 3";
     return (void*)0;
   }
 
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 4";
 #if GOOGLE_PERFTOOLS_REGISTER_THREAD
+
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 5";
   ProfilerRegisterThread();
 #endif
   // Using pthread_attr_setschedparam() at thread creation doesn't actually
   // change the new thread's priority for some reason... Other people on the
   // 'net also complain about it.  The solution is to set priority inside the
   // new thread's threadMain.
+
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 6";
   if (thread->policy_ == SCHED_FIFO || thread->policy_ == SCHED_RR) {
+
+    DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 7";
     struct sched_param sched_param;
     sched_param.sched_priority = thread->priority_;
     int err =
@@ -189,16 +201,23 @@ void* PthreadThread::threadMain(void* arg) {
               << err << ": " << folly::errnoStr(err);
     }
   } else if (thread->policy_ == SCHED_OTHER) {
+
+    DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 8";
 #ifndef _MSC_VER
+    DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 9";
     if (setpriority(PRIO_PROCESS, 0, thread->priority_) != 0) {
+
+      DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 10";
       VLOG(1) << "setpriority failed (are you root?) with error " << errno
               << ": " << folly::errnoStr(errno);
     }
 #endif
   }
 
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 10";
   thread->runnable()->run();
 
+  DLOG(INFO) << "apache::thrift::PthreadThread::threadMain: 11, end";
   return (void*)0;
 }
 
