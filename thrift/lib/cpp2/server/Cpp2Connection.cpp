@@ -275,24 +275,35 @@ void Cpp2Connection::killRequest(
 
 // Response Channel callbacks
 void Cpp2Connection::requestReceived(
-    unique_ptr<ResponseChannel::Request>&& req) {
+    unique_ptr<ResponseChannel::Request>&& req) 
+{
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 1";
   auto reqCtx = std::make_shared<folly::RequestContext>();
   auto handler = worker_->getServer()->getEventHandler();
   if (handler) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 2";
     handler->connectionNewRequest(&context_, reqCtx.get());
   }
   folly::RequestContextScopeGuard rctx(reqCtx);
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 3";
   auto server = worker_->getServer();
   auto observer = server->getObserver();
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 4";
   server->touchRequestTimestamp();
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 5";
   auto injectedFailure = server->maybeInjectFailure();
   switch (injectedFailure) {
     case ThriftServer::InjectedFailure::NONE:
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 6 ";
       break;
     case ThriftServer::InjectedFailure::ERROR:
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 7";
       killRequest(
           *req,
           TApplicationException::TApplicationExceptionType::INJECTED_FAILURE,
@@ -300,81 +311,124 @@ void Cpp2Connection::requestReceived(
           "injected failure");
       return;
     case ThriftServer::InjectedFailure::DROP:
+    
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 8";
       VLOG(1) << "ERROR: injected drop: "
               << context_.getPeerAddress()->getAddressStr();
       return;
     case ThriftServer::InjectedFailure::DISCONNECT:
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 9";
       disconnect("injected failure");
       return;
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 10";
   auto* hreq = static_cast<HeaderServerChannel::HeaderRequest*>(req.get());
   bool useHttpHandler = false;
   // Any POST not for / should go to the status handler
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 11";
   if (hreq->getHeader()->getClientType() == THRIFT_HTTP_SERVER_TYPE) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 12";
     auto buf = req->getBuf();
     // 7 == length of "POST / " - we are matching on the path
     if (buf->length() >= 7 &&
         0 == strncmp(reinterpret_cast<const char*>(buf->data()), "POST", 4) &&
         buf->data()[6] != ' ') {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 13";
       useHttpHandler = true;
     }
 
     // Any GET should use the handler
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 14";
     if (buf->length() >= 3 &&
         0 == strncmp(reinterpret_cast<const char*>(buf->data()), "GET", 3)) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 15";
       useHttpHandler = true;
     }
 
     // Any HEAD should use the handler
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 16";
     if (buf->length() >= 4 &&
         0 == strncmp(reinterpret_cast<const char*>(buf->data()), "HEAD", 4)) {
+      
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 17";
       useHttpHandler = true;
     }
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 18";
   if (useHttpHandler && worker_->getServer()->getGetHandler()) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 19";
     worker_->getServer()->getGetHandler()(
         worker_->getEventBase(), transport_, req->extractBuf());
 
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 20";
     // Close the channel, since the handler now owns the socket.
     channel_->setCallback(nullptr);
     channel_->setTransport(nullptr);
     stop();
+    
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 21, end";
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 22";
   if (worker_->getServer()->getGetHeaderHandler()) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 23";
     worker_->getServer()->getGetHeaderHandler()(
         hreq->getHeader(), context_.getPeerAddress());
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 24";
   if (server->getTrackPendingIO()) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 25";
     worker_->computePendingCount();
   }
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 27";
   if (server->isOverloaded(hreq->getHeader())) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 28";
     killRequest(
         *req,
         TApplicationException::TApplicationExceptionType::LOADSHEDDING,
         server->getOverloadedErrorCode(),
         "loadshedding request");
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 29, end";
     return;
   }
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 30";
   if (worker_->stopping_) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 31";
     killRequest(
         *req,
         TApplicationException::TApplicationExceptionType::INTERNAL_ERROR,
         kQueueOverloadedErrorCode,
         "server shutting down");
+    
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 32, end";
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 33";
   server->incActiveRequests();
   if (req->timestamps_.getSamplingStatus().isEnabled()) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 34";
     // Expensive operations; happens only when sampling is enabled
     req->timestamps_.processBegin =
         apache::thrift::concurrency::Util::currentTimeUsec();
     if (observer) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 35";
       observer->queuedRequests(threadManager_->pendingTaskCount());
       observer->activeRequests(
           server->getActiveRequests() + server->getPendingCount());
@@ -383,42 +437,62 @@ void Cpp2Connection::requestReceived(
 
   // After this, the request buffer is no longer owned by the request
   // and will be released after deserializeRequest.
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 36";
   unique_ptr<folly::IOBuf> buf = hreq->extractBuf();
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 37";
   Cpp2Request* t2r = new Cpp2Request(std::move(req), this_);
   auto up2r = std::unique_ptr<ResponseChannel::Request>(t2r);
   activeRequests_.insert(t2r);
   ++worker_->activeRequests_;
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 38";
   if (observer) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 39";
     observer->receivedRequest();
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 40";
   std::chrono::milliseconds queueTimeout;
   std::chrono::milliseconds taskTimeout;
   auto differentTimeouts = server->getTaskExpireTimeForRequest(
       *(hreq->getHeader()), queueTimeout, taskTimeout);
   if (differentTimeouts) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 41";
     if (queueTimeout > std::chrono::milliseconds(0)) {
+
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 42";
       scheduleTimeout(&t2r->queueTimeout_, queueTimeout);
     }
   }
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 43";
   if (taskTimeout > std::chrono::milliseconds(0)) {
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 44";
     scheduleTimeout(&t2r->taskTimeout_, taskTimeout);
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 45";
   auto reqContext = t2r->getContext();
   reqContext->setRequestTimeout(taskTimeout);
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 46";
   try {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 47";
     auto protoId = static_cast<apache::thrift::protocol::PROTOCOL_TYPES>(
         hreq->getHeader()->getProtocolId());
 
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 48";
     if (!apache::thrift::detail::ap::deserializeMessageBegin(
             protoId, up2r, buf.get(), reqContext, worker_->getEventBase())) {
+      
+      DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 49, end";
       return;
     }
 
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 50";
     processor_->process(
         std::move(up2r),
         std::move(buf),
@@ -427,10 +501,14 @@ void Cpp2Connection::requestReceived(
         worker_->getEventBase(),
         threadManager_.get());
   } catch (...) {
+
+    DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 51";
     LOG(WARNING) << "Process exception: "
                  << folly::exceptionStr(std::current_exception());
     throw;
   }
+
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::requestReceived: 52, end";
 }
 
 void Cpp2Connection::channelClosed(folly::exception_wrapper&& ex) {

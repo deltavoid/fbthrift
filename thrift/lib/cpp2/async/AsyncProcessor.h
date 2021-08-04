@@ -212,6 +212,12 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
     return queue;
   }
 
+  static void processInThreadHookPoint()
+  {
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThreadHookPoint";
+
+  }
+
   template <
       typename ProtocolIn_,
       typename ProtocolOut_,
@@ -229,7 +235,11 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
       ProcessFunc processFunc,
       ChildType* childClass) 
   {
+
     DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 1";
+    processInThreadHookPoint();
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 1.1";
     if (kind == apache::thrift::RpcKind::SINGLE_REQUEST_NO_RESPONSE) {
 
       DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 2";

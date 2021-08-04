@@ -533,53 +533,91 @@ TServerObserver::SamplingStatus HeaderServerChannel::shouldSample(
 void HeaderServerChannel::messageReceived(
     unique_ptr<IOBuf>&& buf,
     unique_ptr<THeader>&& header,
-    unique_ptr<sample> sample) {
+    unique_ptr<sample> sample) 
+{
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 1";
   DestructorGuard dg(this);
 
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 2";
   uint32_t recvSeqId = header->getSequenceNumber();
   bool outOfOrder = (header->getFlags() & HEADER_FLAG_SUPPORT_OUT_OF_ORDER);
   if (!outOfOrder_.hasValue()) {
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 3";
     outOfOrder_ = outOfOrder;
   } else if (outOfOrder_.value() != outOfOrder) {
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 4";
     LOG(ERROR) << "Channel " << (outOfOrder_.value() ? "" : "doesn't ")
                << "support out-of-order, but received a message with the "
                << "out-of-order bit " << (outOfOrder ? "set" : "unset");
     messageReceiveErrorWrapped(
         folly::make_exception_wrapper<TTransportException>(
             "Bad out-of-order flag"));
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 5, end";
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 6";
   if (!outOfOrder) {
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 7";
     // Create a new seqid for in-order messages because they might not
     // be sequential.  This seqid is only used internally in HeaderServerChannel
     recvSeqId = arrivalSeqId_++;
   }
 
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 8";
   if (callback_) {
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 9";
     unique_ptr<HeaderRequest> request(new HeaderRequest(
         this, std::move(buf), std::move(header), std::move(sample)));
 
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 10";
     if (!outOfOrder) {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 11";
       if (inOrderRequests_.size() > MAX_REQUEST_SIZE) {
+
+        DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 12";        
         // There is probably nothing useful we can do here.
         LOG(WARNING) << "Hit in order request buffer limit";
         auto ex = folly::make_exception_wrapper<TTransportException>(
             "Hit in order request buffer limit");
         messageReceiveErrorWrapped(std::move(ex));
+        
+        DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 13, end";
         return;
       }
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 14";
       request->setInOrderRecvSequenceId(recvSeqId);
     }
 
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 15";
     auto ew = folly::try_and_catch<std::exception>(
-        [&]() { callback_->requestReceived(std::move(request)); });
+        [&]() {
+
+          DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 16"; 
+          callback_->requestReceived(std::move(request)); 
+
+          DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 17";
+    });
+
+    DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 18";
     if (ew) {
+
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 19";
       LOG(WARNING) << "Could not parse request: " << ew.what();
       messageReceiveErrorWrapped(std::move(ew));
+      
+      DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 20, end";
       return;
     }
   }
+
+  DLOG(INFO) << "apache::thrift::HeaderServerChannel::messageReceived: 21, end";
 }
 
 void HeaderServerChannel::messageChannelEOF() {
