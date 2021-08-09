@@ -929,23 +929,33 @@ void process_pmap(
     std::unique_ptr<folly::IOBuf> buf,
     Cpp2RequestContext* ctx,
     folly::EventBase* eb,
-    concurrency::ThreadManager* tm) {
+    concurrency::ThreadManager* tm) 
+{
+  DLOG(INFO) << "apache::thrift::detail::ap::process_map: 1";
   const auto& fname = ctx->getMethodName();
+  DLOG(INFO) << "apache::thrift::detail::ap::process_map: 2";
   auto pfn = pmap.find(fname);
   if (pfn == pmap.end()) {
+
+    DLOG(INFO) << "apache::thrift::detail::ap::process_map: 3";
     process_missing<ProtocolReader>(proc, fname, std::move(req),
         std::move(buf), ctx, eb, tm, ctx->getProtoSeqId());
     return;
   }
 
+  DLOG(INFO) << "apache::thrift::detail::ap::process_map: 4";
   folly::io::Cursor cursor(buf.get());
   cursor.skip(ctx->getMessageBeginSize());
 
+  DLOG(INFO) << "apache::thrift::detail::ap::process_map: 5";
   auto iprot = std::make_unique<ProtocolReader>();
   iprot->setInput(cursor);
 
+  DLOG(INFO) << "apache::thrift::detail::ap::process_map: 6";
   (proc->*(pfn->second))(
       std::move(req), std::move(buf), std::move(iprot), ctx, eb, tm);
+
+  DLOG(INFO) << "apache::thrift::detail::ap::process_map: 7, end";
 }
 
 template <class Processor, typename... Args>
@@ -988,23 +998,33 @@ void process(
     protocol::PROTOCOL_TYPES protType,
     Cpp2RequestContext* ctx,
     folly::EventBase* eb,
-    concurrency::ThreadManager* tm) {
+    concurrency::ThreadManager* tm) 
+{
+  DLOG(INFO) << "apache::thrift::detail::ap::process: 1";
   switch (protType) {
     case protocol::T_BINARY_PROTOCOL: {
+
+      DLOG(INFO) << "apache::thrift::detail::ap::process: 2";
       const auto& pmap = processor->getBinaryProtocolProcessMap();
       return process_pmap(
           processor, pmap, std::move(req), std::move(buf), ctx, eb, tm);
     }
     case protocol::T_COMPACT_PROTOCOL: {
+
+      DLOG(INFO) << "apache::thrift::detail::ap::process: 3";
       const auto& pmap = processor->getCompactProtocolProcessMap();
       return process_pmap(
           processor, pmap, std::move(req), std::move(buf), ctx, eb, tm);
     }
     case protocol::T_FROZEN2_PROTOCOL: {
+
+      DLOG(INFO) << "apache::thrift::detail::ap::process: 3";
       return process_frozen(
           processor, std::move(req), std::move(buf), ctx, eb, tm);
     }
     default:
+
+      DLOG(INFO) << "apache::thrift::detail::ap::process: 4, end";
       LOG(ERROR) << "invalid protType: " << protType;
       return;
   }

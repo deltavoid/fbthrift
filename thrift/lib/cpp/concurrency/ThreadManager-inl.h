@@ -748,11 +748,14 @@ class PriorityQueueThreadManager : public ThreadManager::ImplT<SemType> {
     int64_t expiration = 0,
     bool cancellable = false,
     bool numa = false
-  ) override {
+  ) override 
+  {
+    DLOG(INFO) << "apache::thrift::concurrency::PriorityQueueThreadManager::add(1): 1";
     PriorityRunnable* p = dynamic_cast<PriorityRunnable*>(task.get());
     PRIORITY prio = p ? p->getPriority() : NORMAL;
     ThreadManager::ImplT<SemType>::add(prio, std::move(task), timeout,
                                        expiration, cancellable, numa);
+    DLOG(INFO) << "apache::thrift::concurrency::PriorityQueueThreadManager::add(1): 2, end";
   }
 
   bool tryAdd(std::shared_ptr<Runnable> task) override {
@@ -764,12 +767,14 @@ class PriorityQueueThreadManager : public ThreadManager::ImplT<SemType> {
   /**
    * Implements folly::Executor::add()
    */
-  void add(folly::Func f) override {
+  void add(folly::Func f) override 
+  {
     // We default adds of this kind to highest priority; as ThriftServer
     // doesn't use this itself, this is typically used by the application,
     // and we want to prioritize inflight requests over admitting new request.
     // arguably, we may even want a priority above the max we ever allow for
     // initial queueing
+    DLOG(INFO) << "apache::thrift::concurrency::PriorityQueueThreadManager::add(2): 1";
     ThreadManager::ImplT<SemType>::add(
       HIGH_IMPORTANT,
       make_shared<PriorityFunctionRunner>(HIGH_IMPORTANT, std::move(f)),
@@ -778,6 +783,8 @@ class PriorityQueueThreadManager : public ThreadManager::ImplT<SemType> {
       false,
       false
     );
+
+    DLOG(INFO) << "apache::thrift::concurrency::PriorityQueueThreadManager::add(2): 2, end";
   }
 
   /**

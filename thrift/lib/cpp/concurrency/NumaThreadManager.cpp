@@ -196,7 +196,9 @@ void NumaThreadManager::add(PRIORITY priority,
                             int64_t timeout,
                             int64_t expiration,
                             bool cancellable,
-                            bool numa) {
+                            bool numa) 
+{
+  DLOG(INFO) << "apache::thrift::NumaThreadManager::add(1): 1";
   if (numa && managers_.size() > 1) {
     auto node = NumaThreadFactory::getNumaNode() % managers_.size();
     managers_[node]->add(
@@ -205,16 +207,22 @@ void NumaThreadManager::add(PRIORITY priority,
     managers_[node_++ % managers_.size()]->add(
         priority, std::move(task), timeout, expiration, cancellable, false);
   }
+
+  DLOG(INFO) << "apache::thrift::NumaThreadManager::add(1): 2, end";
 }
 
 void NumaThreadManager::add(std::shared_ptr<Runnable> task,
                             int64_t timeout,
                             int64_t expiration,
                             bool cancellable,
-                            bool numa) {
+                            bool numa) 
+{
+  DLOG(INFO) << "apache::thrift::NumaThreadManager::add(2): 1";
   PriorityRunnable* p = dynamic_cast<PriorityRunnable*>(task.get());
   PRIORITY prio = p ? p->getPriority() : NORMAL;
   add(prio, std::move(task), timeout, expiration, cancellable, numa);
+
+  DLOG(INFO) << "apache::thrift::NumaThreadManager::add(2): 2, end";
 }
 
 bool NumaThreadManager::tryAdd(PRIORITY priority,

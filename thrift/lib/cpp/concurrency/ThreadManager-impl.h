@@ -206,8 +206,12 @@ class ThreadManager::ImplT : public ThreadManager,
   /**
    * Implements folly::Executor::add()
    */
-  void add(folly::Func f) override {
+  void add(folly::Func f) override 
+  {
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::add(2): 1";
     add(FunctionRunner::create(std::move(f)), 0LL, 0LL, false, false);
+
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManager::ImplT::add(2): 2, end";
   }
 
   void remove(shared_ptr<Runnable> task) override;

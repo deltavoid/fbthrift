@@ -405,14 +405,24 @@ class ThreadManagerExecutorAdapter : public ThreadManager {
            int64_t /*timeout*/ = 0,
            int64_t /*expiration*/ = 0,
            bool /*cancellable*/ = false,
-           bool /*numa*/ = false) override {
+           bool /*numa*/ = false) override 
+  {
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManagerExecutorAdapter::add(1): 1";
     exe_->add([=] { task->run(); });
+
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManagerExecutorAdapter::add(1): 2, end";
   }
   bool tryAdd(std::shared_ptr<Runnable> task) override {
     add(std::move(task));
     return true;
   }
-  void add(folly::Func f) override { exe_->add(std::move(f)); }
+  void add(folly::Func f) override 
+  {
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManagerExecutorAdapter::add(2): 1"; 
+    exe_->add(std::move(f)); 
+   
+    DLOG(INFO) << "apache::thrift::concurrency::ThreadManagerExecutorAdapter::add(2): 2, end";
+  }
 
   void remove(std::shared_ptr<Runnable> /*task*/) override {}
   std::shared_ptr<Runnable> removeNextPending() override { return nullptr; }

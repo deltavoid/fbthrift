@@ -280,6 +280,8 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
         req->sendReply(std::unique_ptr<folly::IOBuf>());
       }
     }
+
+    
     DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 4";
     if ((req->isStream() &&
          kind != apache::thrift::RpcKind::SINGLE_REQUEST_STREAMING_RESPONSE) ||
@@ -301,15 +303,18 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
       DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 7, end";
       return;
     }
+
+
     DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 8";
     auto preq = req.get();
     try {
       tm->add(
           std::make_shared<apache::thrift::PriorityEventTask>(
               pri,
+
               [=, iprot = std::move(iprot), buf = std::move(buf)]() mutable {
 
-                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 9";
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 9, lambda begin";
                 auto rq =
                     std::unique_ptr<apache::thrift::ResponseChannel::Request>(
                         preq);
@@ -332,10 +337,12 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
 
                   DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 13";
                   if (!rq->isActive()) {
+              
+                    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 14";
                     eb->runInEventBaseThread(
                         [rq = std::move(rq)]() mutable { rq.reset(); });
 
-                    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 14";
+                    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 14.1, end";
                     return;
                   }
                 }
@@ -349,7 +356,7 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
                     eb,
                     tm);
 
-                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 16";
+                DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 16, lambda end";
               },
               preq,
               eb,
@@ -358,6 +365,8 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
           0, // expiration
           true, // cancellable
           true); // numa
+
+      
       DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::processInThread: 17";
       req.release();
     } catch (const std::exception&) {
