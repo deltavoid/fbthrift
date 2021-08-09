@@ -627,6 +627,7 @@ class HandlerCallbackBase {
 
       DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 3";
       getEventBase()->runInEventBaseThread(
+
           [req = std::move(req_), queue = std::move(queue)]() mutable {
 
             DLOG(INFO) << "apache::thrift::HandlerCallbackBase::sendReply: 4";
@@ -809,7 +810,7 @@ class HandlerCallback : public HandlerCallbackBase {
       resultInThread(std::move(r.value()));
     }
 
-    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(2): 4,";
+    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(2): 4, end";
   }
   static void completeInThread(
       std::unique_ptr<HandlerCallback> thisPtr,

@@ -78,17 +78,19 @@ Cpp2Connection::Cpp2Connection(
       transport_(transport),
       threadManager_(worker_->getServer()->getThreadManager()) 
 {
-
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 1";
   channel_->setQueueSends(worker_->getServer()->getQueueSends());
   channel_->setMinCompressBytes(worker_->getServer()->getMinCompressBytes());
   channel_->setDefaultWriteTransforms(
       worker_->getServer()->getDefaultWriteTransforms());
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 2";
   auto observer = worker_->getServer()->getObserver();
   if (observer) {
     channel_->setSampleRate(observer->getSampleRate());
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 3";
   // Process the security kill switch.
   if (isSecurityKillSwitchEnabled() &&
       worker_->getServer()->getSaslPolicy() == "required") {
@@ -106,6 +108,7 @@ Cpp2Connection::Cpp2Connection(
     }
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 4";
   if (transport) {
     auto factory = worker_->getServer()->getSaslServerFactory();
     if (factory) {
@@ -116,10 +119,12 @@ Cpp2Connection::Cpp2Connection(
     }
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 5";
   const bool downgradeSaslPolicy =
       worker_->getServer()->getAllowInsecureLoopback() &&
       isClientLocal(*address, *context_.getLocalAddress());
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 6";
   if (worker_->getServer()->getSaslEnabled() &&
       (worker_->getServer()->getNonSaslEnabled() || downgradeSaslPolicy)) {
     channel_->setSecurityPolicy(THRIFT_SECURITY_PERMITTED);
@@ -130,10 +135,13 @@ Cpp2Connection::Cpp2Connection(
     channel_->setSecurityPolicy(THRIFT_SECURITY_DISABLED);
   }
 
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 7";
   auto handler = worker_->getServer()->getEventHandler();
   if (handler) {
     handler->newConnection(&context_);
   }
+
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Connection: 8, end";
 }
 
 Cpp2Connection::~Cpp2Connection() {
@@ -534,9 +542,13 @@ Cpp2Connection::Cpp2Request::Cpp2Request(
     std::shared_ptr<Cpp2Connection> con)
     : req_(static_cast<HeaderServerChannel::HeaderRequest*>(req.release())),
       connection_(con),
-      reqContext_(&con->context_, req_->getHeader()) {
+      reqContext_(&con->context_, req_->getHeader()) 
+{
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::Cpp2Request: 1";
   queueTimeout_.request_ = this;
   taskTimeout_.request_ = this;
+
+  DLOG(INFO) << "apache::thrift::Cpp2Connection::Cpp2Request::Cpp2Request: 2, end";
 }
 
 MessageChannel::SendCallback* Cpp2Connection::Cpp2Request::prepareSendCallback(
