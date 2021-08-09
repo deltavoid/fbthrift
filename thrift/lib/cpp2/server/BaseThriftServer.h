@@ -53,10 +53,15 @@ typedef std::function<void(
 template <typename T>
 class ThriftServerAsyncProcessorFactory : public AsyncProcessorFactory {
  public:
-  explicit ThriftServerAsyncProcessorFactory(std::shared_ptr<T> t) {
+  explicit ThriftServerAsyncProcessorFactory(std::shared_ptr<T> t) 
+  {
+    DLOG(INFO) << "apache::thrift::ThriftServerAsyncProcessorFactory::ThriftServerAsyncProcessorFactory: 1";
     svIf_ = t;
+    DLOG(INFO) << "apache::thrift::ThriftServerAsyncProcessorFactory::ThriftServerAsyncProcessorFactory: 2, end";
   }
-  std::unique_ptr<apache::thrift::AsyncProcessor> getProcessor() override {
+  std::unique_ptr<apache::thrift::AsyncProcessor> getProcessor() override 
+  {
+    DLOG(INFO) << "apache::thrift::ThriftServerAsyncProcessorFactory::getProcessor";
     return std::unique_ptr<apache::thrift::AsyncProcessor>(
         new typename T::ProcessorType(svIf_.get()));
   }

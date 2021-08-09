@@ -52,7 +52,8 @@ Cpp2Connection::Cpp2Connection(
     const std::shared_ptr<TAsyncTransport>& transport,
     const folly::SocketAddress* address,
     std::shared_ptr<Cpp2Worker> worker,
-    const std::shared_ptr<HeaderServerChannel>& serverChannel)
+    const std::shared_ptr<HeaderServerChannel>& serverChannel
+)
     : processor_(worker->getServer()->getCpp2Processor()),
       duplexChannel_(
           worker->getServer()->isDuplex() ? std::make_unique<DuplexChannel>(
@@ -75,7 +76,9 @@ Cpp2Connection::Cpp2Connection(
           nullptr,
           worker_->getServer()->getClientIdentityHook()),
       transport_(transport),
-      threadManager_(worker_->getServer()->getThreadManager()) {
+      threadManager_(worker_->getServer()->getThreadManager()) 
+{
+
   channel_->setQueueSends(worker_->getServer()->getQueueSends());
   channel_->setMinCompressBytes(worker_->getServer()->getMinCompressBytes());
   channel_->setDefaultWriteTransforms(

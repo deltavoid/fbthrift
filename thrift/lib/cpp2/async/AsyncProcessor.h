@@ -161,15 +161,34 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
       Args& args,
       folly::IOBuf* buf,
       ProtocolIn* iprot,
-      apache::thrift::ContextStack* c) {
+      apache::thrift::ContextStack* c) 
+  {
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 1";
     c->preRead();
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 2";
     apache::thrift::SerializedMessage smsg;
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 3";
     smsg.protocolType = iprot->protocolType();
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 4";
     smsg.buffer = buf;
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 5";
     c->onReadData(smsg);
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 6";
     uint32_t bytes = detail::deserializeRequestBody(iprot, &args);
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 7";
     iprot->readMessageEnd();
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 8";
     c->postRead(nullptr, bytes);
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::deserializeRequest: 9, end";
   }
 
   template <typename ProtocolOut, typename Result>
@@ -178,20 +197,32 @@ class GeneratedAsyncProcessor : public AsyncProcessor {
       ProtocolOut* prot,
       int32_t protoSeqId,
       apache::thrift::ContextStack* ctx,
-      const Result& result) {
+      const Result& result) 
+  {
+
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 1";
     folly::IOBufQueue queue(folly::IOBufQueue::cacheChainLength());
     size_t bufSize = detail::serializedResponseBodySizeZC(prot, &result);
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 2";
     bufSize += prot->serializedMessageSize(method);
     prot->setOutput(&queue, bufSize);
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 3";
     ctx->preWrite();
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 4";
     prot->writeMessageBegin(method, apache::thrift::T_REPLY, protoSeqId);
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 5";
     detail::serializeResponseBody(prot, &result);
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 6";
     prot->writeMessageEnd();
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 7";
     ::apache::thrift::SerializedMessage smsg;
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 8";
     smsg.protocolType = prot->protocolType();
     smsg.buffer = queue.front();
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 9";
     ctx->onWriteData(smsg);
     ctx->postWrite(queue.chainLength());
+    DLOG(INFO) << "apache::thrift::GeneratedAsyncProcessor::serializeResponse: 10";
     return queue;
   }
 
@@ -371,7 +402,10 @@ class HandlerCallbackBase {
 
  public:
   HandlerCallbackBase()
-      : eb_(nullptr), tm_(nullptr), reqCtx_(nullptr), protoSeqId_(0) {}
+      : eb_(nullptr), tm_(nullptr), reqCtx_(nullptr), protoSeqId_(0) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::HandlerCallbackBase(1)";
+  }
 
   HandlerCallbackBase(
       std::unique_ptr<ResponseChannel::Request> req,
@@ -386,7 +420,10 @@ class HandlerCallbackBase {
         eb_(eb),
         tm_(tm),
         reqCtx_(reqCtx),
-        protoSeqId_(0) {}
+        protoSeqId_(0) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::HandlerCallbackBase(2)";
+  }
 
   virtual ~HandlerCallbackBase() {
     // req must be deleted in the eb
@@ -653,7 +690,10 @@ class HandlerCallback : public HandlerCallbackBase {
       const ResultType&);
 
  public:
-  HandlerCallback() : cp_(nullptr) {}
+  HandlerCallback() : cp_(nullptr) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::HandlerCallback(1)";
+  }
 
   HandlerCallback(
       std::unique_ptr<ResponseChannel::Request> req,
@@ -671,27 +711,54 @@ class HandlerCallback : public HandlerCallbackBase {
             eb,
             tm,
             reqCtx),
-        cp_(cp) {
+        cp_(cp) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::HandlerCallback(2)";
     this->protoSeqId_ = protoSeqId;
   }
 
-  void result(const ResultType& r) {
+  void result(const ResultType& r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::result(1): 1";
     doResult(r);
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::result(1): 2";
   }
-  void result(std::unique_ptr<ResultType> r) {
+  void result(std::unique_ptr<ResultType> r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::result(2): 1";
     doResult(*r);
+    DLOG(INFO) << "apache::thrift::HandlerCallback::result(2): 2";
   }
-  void resultInThread(const ResultType& r) {
+  void resultInThread(const ResultType& r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 1";
     result(r);
+    
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 2";
     delete this;
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 3, end";
   }
-  void resultInThread(std::unique_ptr<ResultType> r) {
+  void resultInThread(std::unique_ptr<ResultType> r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(2): 1";
     result(*r);
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 2";
     delete this;
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 3, end";
   }
-  void resultInThread(const std::shared_ptr<ResultType>& r) {
+  void resultInThread(const std::shared_ptr<ResultType>& r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(3): 1";
     result(*r);
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 2";
     delete this;
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::resultInThread(1): 3, end";
   }
 
   static void resultInThread(
@@ -720,26 +787,50 @@ class HandlerCallback : public HandlerCallbackBase {
       result(std::move(r.value()));
     }
   }
-  void completeInThread(folly::Try<T>&& r) {
+  void completeInThread(folly::Try<T>&& r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(2): 1";
     if (r.hasException()) {
+
+      DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(2): 2";
       exceptionInThread(std::move(r.exception()));
     } else {
+
+      DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(2): 3";
       resultInThread(std::move(r.value()));
     }
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(2): 4,";
   }
   static void completeInThread(
       std::unique_ptr<HandlerCallback> thisPtr,
-      folly::Try<T>&& r) {
+      folly::Try<T>&& r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(1): 1";
     DCHECK(thisPtr);
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(1): 2";
     thisPtr.release()->completeInThread(std::move(r));
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::completeInThread(1): 3";
   }
 
  protected:
-  virtual void doResult(const ResultType& r) {
+  virtual void doResult(const ResultType& r) 
+  {
+    DLOG(INFO) << "apache::thrift::HandlerCallback::doResult: 1";
     assert(cp_);
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::doResult: 2";
     auto queue = cp_(this->protoSeqId_, this->ctx_.get(), r);
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::doResult: 3";
     this->ctx_.reset();
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::doResult: 4";
     sendReply(std::move(queue));
+
+    DLOG(INFO) << "apache::thrift::HandlerCallback::doResult: 5, end";
   }
 
   cob_ptr cp_;
@@ -1119,21 +1210,35 @@ class ServerInterface : public AsyncProcessorFactory {
         concurrency::ThreadManager* executor) {
       return makeKeepAlive(new BlockingThreadManager(executor));
     }
-    void add(folly::Func f) override {
+    void add(folly::Func f) override 
+    {
+      DLOG(INFO) << "apache::thrift::BlockingThreadManager::add: 1";
       std::shared_ptr<apache::thrift::concurrency::Runnable> task =
           concurrency::FunctionRunner::create(std::move(f));
+
+      DLOG(INFO) << "apache::thrift::BlockingThreadManager::add: 2";
       try {
+
+        DLOG(INFO) << "apache::thrift::BlockingThreadManager::add: 3";
+
+        
         executor_->add(
             std::move(task),
             std::chrono::milliseconds(kTimeout).count(),
             0,
             false,
             false);
+
+        DLOG(INFO) << "apache::thrift::BlockingThreadManager::add: 4, end";
         return;
       } catch (...) {
+
+        DLOG(INFO) << "apache::thrift::BlockingThreadManager::add: 5";
         LOG(FATAL) << "Failed to schedule a task within timeout: "
                    << folly::exceptionStr(std::current_exception());
       }
+
+      DLOG(INFO) << "apache::thrift::BlockingThreadManager::add: 6, end";
     }
 
    private:
